@@ -2,4 +2,6 @@
 *.iml
 out
 gen
-/script.js
+/scripts/popup.js
+/background.js
+/scripts/background.js

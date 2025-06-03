@@ -11,10 +11,16 @@
   "action": {
     "default_popup": "popup.html"
   },
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
   "permissions": [
+    "tabs",
+    "scripting",
     "downloads"
   ],
   "host_permissions": [
+    "https://lcms.skku.edu/*",
     "https://vod.skku.edu/*"
   ]
 }
