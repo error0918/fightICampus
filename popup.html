@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>fightICampus</title>
+    <style>
+        @font-face {
+            font-family: 'NanumSquareNeo';
+            src: url('./fonts/NanumSquareNeoTTF-aLt.woff2') format('woff2');
+            font-weight: 200;
+        }
+        @font-face {
+            font-family: 'NanumSquareNeo';
+            src: url('./fonts/NanumSquareNeoTTF-bRg.woff2') format('woff2');
+            font-weight: 400;
+        }
+        @font-face {
+            font-family: 'NanumSquareNeo';
+            src: url('./fonts/NanumSquareNeoTTF-cBd.woff2') format('woff2');
+            font-weight: 600;
+        }
+        @font-face {
+            font-family: 'NanumSquareNeo';
+            src: url('./fonts/NanumSquareNeoTTF-dEb.woff2') format('woff2');
+            font-weight: 700;
+        }
+        @font-face {
+            font-family: 'NanumSquareNeo';
+            src: url('./fonts/NanumSquareNeoTTF-eHv.woff2') format('woff2');
+            font-weight: 800;
+        }
+
+        body {
+            width: 400px;
+            font-family: "NanumSquare Neo", sans-serif;
+        }
+
+        #log {
+            background: #f4f4f4;
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 250px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        #subLog {
+            background: #f4f4f4;
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+    <script type="module" src="./script.js"></script>
+</head>
+<body>
+    <h1>fightICampus 테스트</h1>
+    <button id="downloadBtn">📥 다운로드 시작</button>
+    <h3>📋 로그</h3>
+    <div id="log"></div>
+    <h3>📋 서브 로그</h3>
+    <div id="subLog"></div>
+</body>
+</html>
