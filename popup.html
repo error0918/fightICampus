@@ -53,12 +53,19 @@
             white-space: pre-wrap;
             font-family: monospace;
         }
+
+        .child {
+            display: inline-block;
+        }
     </style>
     <script type="module" src="scripts/popup.js"></script>
 </head>
 <body>
     <h1>fightICampus 테스트</h1>
-    <button id="downloadBtn">📥 다운로드 시작</button>
+    <div>
+    <button id="inspectButton" class="child">분석</button>
+    <button id="downloadButton" class="child">다운로드 시작</button>
+    </div>
     <h3>📋 로그</h3>
     <div id="log"></div>
     <h3>📋 서브 로그</h3>

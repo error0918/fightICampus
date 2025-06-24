@@ -3,5 +3,5 @@
 out
 gen
 /scripts/popup.js
-/background.js
 /scripts/background.js
+/scripts/content_script.js
