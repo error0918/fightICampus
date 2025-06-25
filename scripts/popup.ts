@@ -1,13 +1,12 @@
 (function () {
-    function inspect(tabs: browser.tabs.Tab[]): boolean {
-        let tab = tabs[0]
-        log({ msg: `[inspect] Started: ${tab.url}` })
+    function inspect(tab: chrome.tabs.Tab): boolean {
+        logA({ msg: `[inspect] Started: ${tab.url}` })
 
         if (!tab.url || !tab.id
             || (!tab.url.startsWith("https://canvas.skku.edu/courses/") && !tab.url.startsWith("http://canvas.skku.edu/courses/"))
             || (!tab.url.endsWith("/297") && !tab.url.endsWith("/297/"))
             || !tab.url.includes("/items/")) {
-            log({msg: "[inspect] Not Expected URL"})
+            logA({msg: "[inspect] Not Expected URL"})
             return false
         }
 
@@ -16,7 +15,7 @@
     }
 
 
-    function log({ msg, sub = false }: { msg: string, sub?: boolean }): void {
+    function logA({ msg, sub = false }: { msg: string, sub?: boolean }): void {
         const logArea = !sub ?
             document.getElementById("log") as HTMLDivElement :
             document.getElementById("subLog") as HTMLDivElement
@@ -35,41 +34,23 @@
     document.addEventListener("DOMContentLoaded", () => {
         const inspectButton = document.getElementById("inspectButton") as HTMLButtonElement
         inspectButton.addEventListener("click", () => {
-            log({ msg: "Inspect Button Clicked", sub: true })
-            browser.tabs.query({ active: true, currentWindow: true }).then(
-                inspect, (tabs: browser.tabs.Tab[]) => { log({ msg: "Tab Query Error" }) }
-            )
+            logA({ msg: "Inspect Button Clicked", sub: true })
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                const tab = tabs[0]
+                if (tab) inspect(tab)
+            })
         })
 
         const downloadButton = document.getElementById("downloadButton") as HTMLButtonElement
         downloadButton.addEventListener("click", () => {
-            log({ msg: "Download Button Clicked", sub: true })
-            //
+            logA({ msg: "Download Button Clicked", sub: true })
+            chrome.runtime.sendMessage({
+                command: "downloadICampus",
+                url: "https://vod.skku.edu/contents4/skku100001/660b67074c260/contents/media_files/mobile/ssmovie.mp4",
+                filename: "output.mp4"
+            })
         })
     })
 
-    log({ msg: "TS Loaded", sub: true })
+    logA({ msg: "TS Loaded", sub: true })
 })() // IIFE
-
-/*
-document.addEventListener("DOMContentLoaded", () => {
-    const inspectButton = document.getElementById("inspectButton") as HTMLButtonElement
-    inspectButton.addEventListener("click", () => {
-        log({ msg: "Inspect Button Clicked", sub: true })
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            const tab = tabs[0]
-            if (tab) inspect(tab)
-        })
-    })
-
-    const downloadButton = document.getElementById("downloadButton") as HTMLButtonElement
-    downloadButton.addEventListener("click", () => {
-        log({ msg: "Download Button Clicked", sub: true })
-        chrome.runtime.sendMessage({
-            command: "downloadICampus",
-            url: "https://vod.skku.edu/contents4/skku100001/646d582510df8/contents/media_files/mobile/ssmovie.mp4",
-            filename: "output.mp4"
-        })
-    })
-})
- */

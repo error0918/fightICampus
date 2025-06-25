@@ -3,7 +3,7 @@
     "target": "ES6",
     "lib": ["ES2021", "DOM"],
     "module": "commonjs",
-    "types": ["chrome", "firefox-webext-browser"],
+    "types": ["chrome"],
     "esModuleInterop": true,
     "strict": true,
     "skipLibCheck": true

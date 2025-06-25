@@ -14,12 +14,11 @@
     "default_popup": "popup.html"
   },
   "background": {
-    "service_worker": "scripts/background.js",
-    "scripts": ["scripts/background.js"]
+    "service_worker": "scripts/background.js"
   },
   "content_scripts": [
     {
-      "matches": ["https://lcms.skku.edu/*"],
+      "matches": ["https://lcms.skku.edu/em/*"],
       "all_frames": true,
       "match_about_blank": true,
       "js": ["scripts/content_script.js"]

@@ -1,10 +1,44 @@
 (function (){
     // Logic
+
     let test = true
 
-    function log(msg: string): void {
-        if (test) console.log(`[fightICampus] ${msg}`)
-        // TODO
+    function log(msg: string, tag: string | null = null, err: boolean = false): void {
+        if (test) console.log(tag ? `[fightICampus][${tag}] ${msg}` : `[fightICampus] ${msg}`)
+        chrome.runtime.sendMessage({
+            command: "log",
+            msg: tag ? `[CS][${tag}] ${msg}` : `[CS] ${msg}`,
+            err: err
+        })
+    }
+
+    function downloadICampus(
+        { url, filename="output.mp4" }: { url: string, filename?: string }
+    ): Promise<boolean> {
+        function logD(msg: any, err: boolean = false): void { log(msg, "downloadICampus", err) }
+        logD("Started")
+        return fetch(url)
+            .then((response) => {
+                logD("Connected")
+                return response.blob()
+            })
+            .then((blob) => {
+                const blobUrl = URL.createObjectURL(blob)
+                const a = document.createElement("a")
+                a.href = blobUrl
+                a.download = filename
+                document.body.appendChild(a)
+                a.click()
+                URL.revokeObjectURL(blobUrl)
+                document.body.removeChild(a)
+                logD("Ended")
+                return true
+            })
+            .catch((e) => {
+                logD("Exception")
+                logD(`${e}`, true)
+                return false
+            })
     }
 
 
@@ -57,6 +91,10 @@
         case "13":
             movLink = `https://vod.skku.edu/contents4/skku100001/${contentId}/contents/media_files/sub.mp4`
             contentTypeStr = "화면 + 캠 동영상 (13)"
+            break
+        case "29":
+            movLink = `https://vod.skku.edu/contents4/skku100001/${contentId}/contents/media_files/screen.mp4`
+            contentTypeStr = "캡쳐 영상 (29)"
             break
         default:
             if (contentType) {
@@ -208,8 +246,8 @@
         makeButton(downloadButton, "다운로드")
         downloadButton.addEventListener("click", () => {
             log(`movLink: ${movLink}`)
-            // TODO : 백그라운드에 요청 보내기
-            // TODO : 이름 지정
+            // TODO : 이름 지정, 로딩창
+            downloadICampus({ url: movLink, filename: `${contentTitle}.mp4` }).then()
         })
         buttonDiv.appendChild(downloadButton)
 
