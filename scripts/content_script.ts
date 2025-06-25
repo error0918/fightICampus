@@ -33,6 +33,7 @@
     log(`duration: ${duration}`)
     log(`registrationDate: ${registrationDate}`)
 
+    let movLink = ""
     let durationStr = ""
     let registrationDateStr = ""
     let contentTypeStr = ""
@@ -50,24 +51,38 @@
     }
     switch (contentType) {
         case "2":
+            movLink = `https://vod.skku.edu/contents4/skku100001/${contentId}/contents/media_files/mobile/ssmovie.mp4`
             contentTypeStr = "일반 동영상 (2)"
             break
         case "13":
+            movLink = `https://vod.skku.edu/contents4/skku100001/${contentId}/contents/media_files/sub.mp4`
             contentTypeStr = "화면 + 캠 동영상 (13)"
             break
         default:
-            if (contentType) contentTypeStr = `확인되지 않은 타입: ${contentType}`
+            if (contentType) {
+                movLink = `https://vod.skku.edu/contents4/skku100001/${contentId}/contents/media_files/mobile/ssmovie.mp4`
+                contentTypeStr = `확인되지 않은 타입: ${contentType}`
+            }
     }
 
 
     // UI
 
+    let font = `@font-face { font-family: 'NanumSquareNeo'; src: url(https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareNeo/NanumSquareNeoTTF-bRg.eot); src: url(https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareNeo/NanumSquareNeoTTF-bRg.eot?#iefix) format("embedded-opentype"), url(https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareNeo/NanumSquareNeoTTF-bRg.woff) format("woff"), url(https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareNeo/NanumSquareNeoTTF-bRg.ttf) format("truetype"); }' +
+    '@font-face { font-family: 'NanumSquareNeoBold'; src: url(https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareNeo/NanumSquareNeoTTF-cBd.eot); src: url(https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareNeo/NanumSquareNeoTTF-cBd.eot?#iefix) format("embedded-opentype"), url(https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareNeo/NanumSquareNeoTTF-cBd.woff) format("woff"), url(https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareNeo/NanumSquareNeoTTF-cBd.ttf) format("truetype"); }`
+    const fontStyle = document.createElement("style")
+    fontStyle.textContent = font
+    document.head.append(fontStyle)
+
     function makeButton(button: HTMLButtonElement, text: string): void {
         button.textContent = text
         button.style.padding = "10px 16px"
+        button.style.fontFamily = "NanumSquareNeo"
         button.style.fontSize = "16px"
         button.style.lineHeight = "1"
-        button.style.border = "none"
+        button.style.borderColor = "#000"
+        button.style.borderWidth = "1px"
+        button.style.borderStyle = "solid"
         button.style.borderRadius = "9999px"
         button.style.backgroundColor = "#0945A0"
         button.style.color = "#ffffff"
@@ -91,6 +106,9 @@
         inspectPopup.style.position = "relative"
         inspectPopup.style.marginLeft = "auto"
         inspectPopup.style.width = "200px"
+        inspectPopup.style.borderColor = "#000000"
+        inspectPopup.style.borderWidth = "1px"
+        inspectPopup.style.borderStyle = "solid"
         inspectPopup.style.borderRadius = "16px"
         inspectPopup.style.padding = "20px"
         inspectPopup.style.marginTop = "10px"
@@ -98,6 +116,7 @@
 
         const inspectTitle = document.createElement("h3")
         inspectTitle.textContent = "영상 분석"
+        inspectTitle.style.fontFamily = "NanumSquareNeoBold"
         inspectPopup.appendChild(inspectTitle)
 
         const inspectClose = document.createElement("p")
@@ -106,6 +125,7 @@
         inspectClose.style.top = "0px"
         inspectClose.style.right = "0px"
         inspectClose.style.padding = "25px"
+        inspectClose.style.fontFamily = "NanumSquareNeo"
         inspectClose.style.fontSize = "16px"
         inspectClose.style.lineHeight = "1"
         inspectClose.style.cursor = "pointer"
@@ -124,6 +144,7 @@
         for (let content of contentList) {
             const inspectText = document.createElement("p")
             inspectText.textContent = content
+            inspectText.style.fontFamily = "NanumSquareNeo"
             inspectText.style.fontSize = "12px"
             inspectText.style.marginTop = "0px"
             inspectText.style.marginBottom = "4px"
@@ -138,6 +159,9 @@
             inspectImage.style.marginTop = "8px"
             inspectImage.style.marginLeft = "auto"
             inspectImage.style.marginRight = "auto"
+            inspectImage.style.borderColor = "#000000"
+            inspectImage.style.borderWidth = "1px"
+            inspectImage.style.borderStyle = "solid"
             inspectPopup.appendChild(inspectImage)
         }
 
@@ -183,7 +207,9 @@
         const downloadButton = document.createElement("button")
         makeButton(downloadButton, "다운로드")
         downloadButton.addEventListener("click", () => {
+            log(`movLink: ${movLink}`)
             // TODO : 백그라운드에 요청 보내기
+            // TODO : 이름 지정
         })
         buttonDiv.appendChild(downloadButton)
 
