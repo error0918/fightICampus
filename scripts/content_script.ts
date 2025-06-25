@@ -1,32 +1,63 @@
 (function (){
     // Logic
-    function log() {}
+    let test = true
+
+    function log(msg: string): void {
+        if (test) console.log(`[fightICampus] ${msg}`)
+        // TODO
+    }
 
 
     // Inspect
 
-    console.log(`[fightICampus] taget: ${window.location.href}`)
+    log(`taget: ${window.location.href}`)
 
     let targetScript = document.scripts[0].textContent
     let variableList = targetScript?.split("\n")
         .filter((line) => line.trim().length > 0)
         .map((line) => line.split(" = ")[1].split(";")[0].replaceAll("\"", ""))
 
-    let [contentId, contentTitle, playerType, contentType] = ["", "", "", ""]
+    let [contentId, contentTitle, _, contentType] = ["", "", "", ""]
     if (variableList && variableList.length > 0) {
-        [contentId, contentTitle, playerType, contentType] = variableList
-        console.log(`[fightICampus] contentId: ${contentId}`)
-        console.log(`[fightICampus] contentTitle: ${contentTitle}`)
-        console.log(`[fightICampus] contentType: ${contentType}`)
+        [contentId, contentTitle,, contentType] = variableList
+        log(`contentId: ${contentId}`)
+        log(`contentTitle: ${contentTitle}`)
+        log(`contentType: ${contentType}`)
     }
     let userName = document.querySelector("meta[name=\"user_name\"]")?.getAttribute("content")
     let thumbnail = document.querySelector("meta[property=\"og:image\"]")?.getAttribute("content")
     let duration = document.querySelector("meta[name=\"duration\"]")?.getAttribute("content")
     let registrationDate = document.querySelector("meta[name=\"regdate\"]")?.getAttribute("content")
-    console.log(`[fightICampus] userName: ${userName}`)
-    console.log(`[fightICampus] thumbnail: ${thumbnail}`)
-    console.log(`[fightICampus] duration: ${duration}`)
-    console.log(`[fightICampus] registrationDate: ${registrationDate}`)
+    log(`userName: ${userName}`)
+    log(`thumbnail: ${thumbnail}`)
+    log(`duration: ${duration}`)
+    log(`registrationDate: ${registrationDate}`)
+
+    let durationStr = ""
+    let registrationDateStr = ""
+    let contentTypeStr = ""
+    if (duration) {
+        let durationInt = parseInt(duration)
+        if (Math.floor(durationInt / 3600)) durationStr += `${Math.floor(durationInt / 3600)}시간 `
+        durationInt = durationInt % 3600
+        if (durationStr || Math.floor(durationInt / 60)) durationStr += `${Math.floor(durationInt / 60)}분 `
+        durationInt = durationInt % 60
+        if (durationStr || durationInt) durationStr += `${durationInt}초`
+    }
+    if (registrationDate) {
+        registrationDateStr += `${registrationDate.slice(0, 4)}/${registrationDate.slice(4, 6)}/${registrationDate.slice(6, 8)} `
+        registrationDateStr += `${registrationDate.slice(8, 10)}:${registrationDate.slice(10, 12)}:${registrationDate.slice(12, 14)}`
+    }
+    switch (contentType) {
+        case "2":
+            contentTypeStr = "일반 동영상 (2)"
+            break
+        case "13":
+            contentTypeStr = "화면 + 캠 동영상 (13)"
+            break
+        default:
+            if (contentType) contentTypeStr = `확인되지 않은 타입: ${contentType}`
+    }
 
 
     // UI
@@ -45,7 +76,7 @@
     }
 
     if (!document.getElementById("fightICampusDiv")) {
-        console.log(`[fightICampus] UI Load Started`)
+        log(`UI Load Started`)
 
         const div = document.createElement("div")
         div.id = "fightICampusDiv"
@@ -57,16 +88,58 @@
         // Popup
         let showInspectPopup = false
         const inspectPopup = document.createElement("div")
-        inspectPopup.id = "fightICampusPopupDiv"
+        inspectPopup.style.position = "relative"
         inspectPopup.style.marginLeft = "auto"
         inspectPopup.style.width = "200px"
-        inspectPopup.style.height = "300px"
         inspectPopup.style.borderRadius = "16px"
         inspectPopup.style.padding = "20px"
         inspectPopup.style.marginTop = "10px"
         inspectPopup.style.backgroundColor = "#ffffff"
 
-        //
+        const inspectTitle = document.createElement("h3")
+        inspectTitle.textContent = "영상 분석"
+        inspectPopup.appendChild(inspectTitle)
+
+        const inspectClose = document.createElement("p")
+        inspectClose.textContent = "X"
+        inspectClose.style.position = "absolute"
+        inspectClose.style.top = "0px"
+        inspectClose.style.right = "0px"
+        inspectClose.style.padding = "25px"
+        inspectClose.style.fontSize = "16px"
+        inspectClose.style.lineHeight = "1"
+        inspectClose.style.cursor = "pointer"
+        inspectClose.addEventListener("click", () => {
+            div.removeChild(inspectPopup)
+            showInspectPopup = false
+        })
+        inspectPopup.appendChild(inspectClose)
+
+        const contentList = [`영상 제목: ${contentTitle}`,
+            `담당 교수님: ${userName}`,
+            `영상 길이: ${durationStr}`,
+            `영상 등록: ${registrationDateStr}`,
+            `영상 ID: ${contentId}`,
+            `영상 Type: ${contentTypeStr}`]
+        for (let content of contentList) {
+            const inspectText = document.createElement("p")
+            inspectText.textContent = content
+            inspectText.style.fontSize = "12px"
+            inspectText.style.marginTop = "0px"
+            inspectText.style.marginBottom = "4px"
+            inspectPopup.appendChild(inspectText)
+        }
+
+        if (thumbnail) {
+            const inspectImage = document.createElement("img")
+            inspectImage.src = thumbnail
+            inspectImage.style.width = "140px"
+            inspectImage.style.display = "block"
+            inspectImage.style.marginTop = "8px"
+            inspectImage.style.marginLeft = "auto"
+            inspectImage.style.marginRight = "auto"
+            inspectPopup.appendChild(inspectImage)
+        }
 
         // Buttons
         const buttonDiv = document.createElement("div")
@@ -101,7 +174,6 @@
         const inspectButton = document.createElement("button")
         makeButton(inspectButton, "분석")
         inspectButton.addEventListener("click", () => {
-            // Popup
             if (showInspectPopup) div.removeChild(inspectPopup)
             else div.appendChild(inspectPopup)
             showInspectPopup = !showInspectPopup
@@ -117,9 +189,6 @@
 
         document.body.appendChild(div)
 
-        console.log(`[fightICampus] UI Load Ended`)
+        log(`UI Load Ended`)
     }
-
-    // https://lcms.skku.edu/em/641d33964ca50?startat=0.00&endat=4703.35&TargetUrl=https%3A%2F%2Fcanvas.skku.edu%2Flearningx%2Fapi%2Fv1%2Fcourses%2F63267%2Fsections%2F0%2Fcomponents%2F10348%2Fprogress%3Fuser_id%3D2024312074%26content_id%3D641d33964ca50%26content_type%3Dmovie&sl=1&pr=1&mxpr=2.00&lg=ko
-
 })() // IIFE
