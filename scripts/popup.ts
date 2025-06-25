@@ -1,62 +1,55 @@
-console.log("dsaf")
+(function () {
+    function inspect(tabs: browser.tabs.Tab[]): boolean {
+        let tab = tabs[0]
+        log({ msg: `[inspect] Started: ${tab.url}` })
 
-function inspect(tabs: browser.tabs.Tab[]): boolean {
-    let tab = tabs[0]
-    log({ msg: `[inspect] Started: ${tab.url}` })
+        if (!tab.url || !tab.id
+            || (!tab.url.startsWith("https://canvas.skku.edu/courses/") && !tab.url.startsWith("http://canvas.skku.edu/courses/"))
+            || (!tab.url.endsWith("/297") && !tab.url.endsWith("/297/"))
+            || !tab.url.includes("/items/")) {
+            log({msg: "[inspect] Not Expected URL"})
+            return false
+        }
 
-    if (!tab.url || !tab.id
-        || (!tab.url.startsWith("https://canvas.skku.edu/courses/") && !tab.url.startsWith("http://canvas.skku.edu/courses/"))
-        || (!tab.url.endsWith("/297") && !tab.url.endsWith("/297/"))
-        || !tab.url.includes("/items/")) {
-        log({msg: "[inspect] Not Expected URL"})
-        return false
+        // TODO
+        return true
     }
 
-    let iframe = document.querySelector("#tool_content")
-    if (!iframe) {
-        log({msg: "[inspect] iframe Noe Exist"})
-        //return false
+
+    function log({ msg, sub = false }: { msg: string, sub?: boolean }): void {
+        const logArea = !sub ?
+            document.getElementById("log") as HTMLDivElement :
+            document.getElementById("subLog") as HTMLDivElement
+        const time = new Date().toLocaleTimeString()
+        const logLine = `[${time}] ${msg}`
+
+        const line = document.createElement("div")
+        line.textContent = logLine
+        logArea.appendChild(line)
+
+        logArea.scrollTop = logArea.scrollHeight
+        console.log(logLine)
     }
 
-    let a = document.getElementById("downloadButton") as HTMLButtonElement
-    console.log("dafs")
-    return true
-}
 
+    document.addEventListener("DOMContentLoaded", () => {
+        const inspectButton = document.getElementById("inspectButton") as HTMLButtonElement
+        inspectButton.addEventListener("click", () => {
+            log({ msg: "Inspect Button Clicked", sub: true })
+            browser.tabs.query({ active: true, currentWindow: true }).then(
+                inspect, (tabs: browser.tabs.Tab[]) => { log({ msg: "Tab Query Error" }) }
+            )
+        })
 
-function log({ msg, sub = false }: { msg: string, sub?: boolean }): void {
-    const logArea = !sub ?
-        document.getElementById("log") as HTMLDivElement :
-        document.getElementById("subLog") as HTMLDivElement
-    const time = new Date().toLocaleTimeString()
-    const logLine = `[${time}] ${msg}`
-
-    const line = document.createElement("div")
-    line.textContent = logLine
-    logArea.appendChild(line)
-
-    logArea.scrollTop = logArea.scrollHeight
-    console.log(logLine)
-}
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    const inspectButton = document.getElementById("inspectButton") as HTMLButtonElement
-    inspectButton.addEventListener("click", () => {
-        log({ msg: "Inspect Button Clicked", sub: true })
-        browser.tabs.query({ active: true, currentWindow: true }).then(
-            inspect, (tabs: browser.tabs.Tab[]) => { log({ msg: "Tab Query Error" }) }
-        )
+        const downloadButton = document.getElementById("downloadButton") as HTMLButtonElement
+        downloadButton.addEventListener("click", () => {
+            log({ msg: "Download Button Clicked", sub: true })
+            //
+        })
     })
 
-    const downloadButton = document.getElementById("downloadButton") as HTMLButtonElement
-    downloadButton.addEventListener("click", () => {
-        log({ msg: "Download Button Clicked", sub: true })
-        //
-    })
-})
-
-log({ msg: "TS Loaded", sub: true })
+    log({ msg: "TS Loaded", sub: true })
+})() // IIFE
 
 /*
 document.addEventListener("DOMContentLoaded", () => {

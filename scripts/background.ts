@@ -1,37 +1,39 @@
-browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.command === "log") {
-        if (request.err) console.error(request.msg)
-        else console.log(request.msg)
-    } else {
-        console.log(`[BG] Message Received: ${JSON.stringify(request)}`)
-        /*
-        if (request.command === "downloadICampus") {
-            console.log("[BG] downloadICampus Started")
-            chrome.tabs.create({ url: "https://lcms.skku.edu", active: false }, (tab) => {
-                const tabId = tab.id
+(function () {
+    browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request.command === "log") {
+            if (request.err) console.error(request.msg)
+            else console.log(request.msg)
+        } else {
+            console.log(`[BG] Message Received: ${JSON.stringify(request)}`)
+            /*
+            if (request.command === "downloadICampus") {
+                console.log("[BG] downloadICampus Started")
+                chrome.tabs.create({ url: "https://lcms.skku.edu", active: false }, (tab) => {
+                    const tabId = tab.id
 
-                chrome.tabs.onUpdated.addListener(function listener(tabIdUpdated, info) {
-                    if (tabIdUpdated === tabId && info.status === "complete") {
-                        chrome.tabs.onUpdated.removeListener(listener)
-                        console.log("[BG] Tab Opened")
+                    chrome.tabs.onUpdated.addListener(function listener(tabIdUpdated, info) {
+                        if (tabIdUpdated === tabId && info.status === "complete") {
+                            chrome.tabs.onUpdated.removeListener(listener)
+                            console.log("[BG] Tab Opened")
 
-                        chrome.scripting.executeScript({
-                            target: { tabId },
-                            func: downloadICampus,
-                            args: [{ url: request.url, filename: request.filename }]
-                        })
-                    }
+                            chrome.scripting.executeScript({
+                                target: { tabId },
+                                func: downloadICampus,
+                                args: [{ url: request.url, filename: request.filename }]
+                            })
+                        }
+                    })
                 })
-            })
+            }
+            if (request.command === "closeTab") {
+                console.log("[BG] closeTab")
+                if (sender.tab != undefined && sender.tab.id != undefined)
+                    chrome.tabs.remove(sender.tab.id)
+            }
+            */
         }
-        if (request.command === "closeTab") {
-            console.log("[BG] closeTab")
-            if (sender.tab != undefined && sender.tab.id != undefined)
-                chrome.tabs.remove(sender.tab.id)
-        }
-        */
-    }
-})
+    })
+})() // IIFE
 
 
 /*
