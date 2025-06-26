@@ -129,7 +129,7 @@
         button.style.fontFamily = "NanumSquareNeo"
         button.style.fontSize = "16px"
         button.style.lineHeight = "1"
-        button.style.borderColor = "#000"
+        button.style.borderColor = "#000000"
         button.style.borderWidth = "1px"
         button.style.borderStyle = "solid"
         button.style.borderRadius = "9999px"
@@ -149,7 +149,7 @@
         div.style.right = "20px"
         div.style.zIndex = "9999"
 
-        // Popup
+        // InspectPopup
         let showInspectPopup = false
         const inspectPopup = document.createElement("div")
         inspectPopup.style.position = "relative"
@@ -214,6 +214,136 @@
             inspectPopup.appendChild(inspectImage)
         }
 
+        // DownloadPopup
+        let showDownloadPopup = false
+        const downloadPopup = document.createElement("div")
+        downloadPopup.style.position = "relative"
+        downloadPopup.style.marginLeft = "auto"
+        downloadPopup.style.width = "200px"
+        downloadPopup.style.borderColor = "#000000"
+        downloadPopup.style.borderWidth = "1px"
+        downloadPopup.style.borderStyle = "solid"
+        downloadPopup.style.borderRadius = "16px"
+        downloadPopup.style.padding = "20px"
+        downloadPopup.style.marginTop = "10px"
+        downloadPopup.style.backgroundColor = "#ffffff"
+
+        const downloadTitle = document.createElement("h3")
+        downloadTitle.textContent = "다운로드"
+        downloadTitle.style.fontFamily = "NanumSquareNeoBold"
+        downloadPopup.appendChild(downloadTitle)
+
+        const downloadClose = document.createElement("p")
+        downloadClose.textContent = "X"
+        downloadClose.style.position = "absolute"
+        downloadClose.style.top = "0px"
+        downloadClose.style.right = "0px"
+        downloadClose.style.padding = "25px"
+        downloadClose.style.fontFamily = "NanumSquareNeo"
+        downloadClose.style.fontSize = "16px"
+        downloadClose.style.lineHeight = "1"
+        downloadClose.style.cursor = "pointer"
+        downloadClose.addEventListener("click", () => {
+            div.removeChild(downloadPopup)
+            showDownloadPopup = false
+        })
+        downloadPopup.appendChild(downloadClose)
+
+        const downloadInputTitle = document.createElement("p")
+        downloadInputTitle.textContent = "파일명"
+        downloadInputTitle.style.fontFamily = "NanumSquareNeo"
+        downloadInputTitle.style.fontSize = "12px"
+        downloadInputTitle.style.lineHeight = "1"
+        downloadInputTitle.style.marginBottom = "4px"
+        downloadPopup.appendChild(downloadInputTitle)
+
+        const downloadInput = document.createElement("input")
+        downloadInput.value = contentTitle
+        downloadInput.type = "text"
+        downloadInput.placeholder = "/\\:*?\"<> 금지"
+        downloadInput.style.padding = "8px 12px"
+        downloadInput.style.fontFamily = "NanumSquareNeo"
+        downloadInput.style.fontSize = "14px"
+        downloadInput.style.lineHeight = "1"
+        downloadInput.style.width = "160px"
+        downloadInput.style.marginBottom = "12px"
+        downloadInput.addEventListener(
+            'keydown',
+            (e) => { e.stopImmediatePropagation() },
+            true
+        )
+        downloadPopup.appendChild(downloadInput)
+
+        const downloadPopupButtonDiv = document.createElement("div")
+        downloadPopupButtonDiv.style.display = "flex"
+        downloadPopupButtonDiv.style.flexDirection = "row-reverse"
+        downloadPopupButtonDiv.style.alignItems = "center"
+        downloadPopupButtonDiv.style.marginLeft = "auto"
+        downloadPopupButtonDiv.style.gap = "12px"
+        downloadPopup.appendChild(downloadPopupButtonDiv)
+
+        const downloadSpinnerDiv = document.createElement("div")
+        const shadow = downloadSpinnerDiv.attachShadow({ mode: "open" })
+
+        const bootstrapCDN = document.createElement("link")
+        bootstrapCDN.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        bootstrapCDN.rel = "stylesheet"
+        bootstrapCDN.integrity = "sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr"
+        bootstrapCDN.crossOrigin = "anonymous"
+        shadow.appendChild(bootstrapCDN)
+
+        const downloadSpinner = document.createElement("div")
+        downloadSpinner.className = "spinner-border"
+        downloadSpinner.role = "status"
+        shadow.appendChild(downloadSpinner)
+
+        let showDownloadPopupMessage = false
+        const downloadPopupMessage = document.createElement("p")
+        downloadPopupMessage.textContent = "오류 발생"
+        downloadPopupMessage.style.fontFamily = "NanumSquareNeo"
+        downloadPopupMessage.style.fontSize = "12px"
+        downloadPopupMessage.style.color = "#7a0520"
+
+        const downloadPopupButton = document.createElement("button")
+        downloadPopupButton.textContent = "다운로드"
+        downloadPopupButton.style.padding = "10px 16px"
+        downloadPopupButton.style.fontFamily = "NanumSquareNeo"
+        downloadPopupButton.style.fontSize = "16px"
+        downloadPopupButton.style.lineHeight = "1"
+        downloadPopupButton.style.borderColor = "#000000"
+        downloadPopupButton.style.borderWidth = "1px"
+        downloadPopupButton.style.borderStyle = "solid"
+        downloadPopupButton.style.borderRadius = "9999px"
+        downloadPopupButton.style.backgroundColor = "#0945A0"
+        downloadPopupButton.style.color = "#ffffff"
+        downloadPopupButton.style.cursor = "pointer"
+        downloadPopupButton.addEventListener("click", () => {
+            log(`movLink: ${movLink}`)
+            if (showDownloadPopupMessage) downloadPopupButtonDiv.removeChild(downloadPopupMessage)
+
+            downloadPopupButton.style.backgroundColor = "#5f6b7e"
+            downloadPopupButton.style.cursor = "wait"
+            downloadPopupButton.disabled = true
+
+            downloadPopupButtonDiv.appendChild(downloadSpinnerDiv)
+
+            let filename = contentTitle
+            if (downloadInput.value.trim() != "" && !/[\/:*?"<>\\]/.test(downloadInput.value)) filename = downloadInput.value.trim()
+            downloadICampus({ url: movLink, filename: `${filename}.mp4` })
+                .then((result: boolean) => {
+                    if (!result) {
+                        showDownloadPopupMessage = true
+                        downloadPopupButtonDiv.appendChild(downloadPopupMessage)
+                    }
+                    downloadPopupButton.style.backgroundColor = "#0945A0"
+                    downloadPopupButton.style.cursor = "pointer"
+                    downloadPopupButton.disabled = false
+
+                    downloadPopupButtonDiv.removeChild(downloadSpinnerDiv)
+                })
+        })
+        downloadPopupButtonDiv.appendChild(downloadPopupButton)
+
         // Buttons
         const buttonDiv = document.createElement("div")
         buttonDiv.style.width = "fit-content"
@@ -232,6 +362,10 @@
                     div.removeChild(inspectPopup)
                     showInspectPopup = false
                 }
+                if (showDownloadPopup) {
+                    div.removeChild(downloadPopup)
+                    showDownloadPopup = false
+                }
                 buttonDiv.removeChild(inspectButton)
                 buttonDiv.removeChild(downloadButton)
                 toggleButton.textContent = "<"
@@ -248,7 +382,13 @@
         makeButton(inspectButton, "분석")
         inspectButton.addEventListener("click", () => {
             if (showInspectPopup) div.removeChild(inspectPopup)
-            else div.appendChild(inspectPopup)
+            else {
+                if (showDownloadPopup) {
+                    div.removeChild(downloadPopup)
+                    showDownloadPopup = false
+                }
+                div.appendChild(inspectPopup)
+            }
             showInspectPopup = !showInspectPopup
         })
         buttonDiv.appendChild(inspectButton)
@@ -256,10 +396,15 @@
         const downloadButton = document.createElement("button")
         makeButton(downloadButton, "다운로드")
         downloadButton.addEventListener("click", () => {
-            log(`movLink: ${movLink}`)
-            // TODO : 이름 지정, 로딩창
-            downloadICampus({ url: movLink, filename: `${contentTitle}.mp4` }).then()
-            nativeVideo(movLink)
+            if (showDownloadPopup) div.removeChild(downloadPopup)
+            else {
+                if (showInspectPopup) {
+                    div.removeChild(inspectPopup)
+                    showInspectPopup = false
+                }
+                div.appendChild(downloadPopup)
+            }
+            showDownloadPopup = !showDownloadPopup
         })
         buttonDiv.appendChild(downloadButton)
 
