@@ -6,62 +6,97 @@
     }
 
     function nativeVideo(url: string): void {
-        function logN(msg: any): void {
-            chrome.runtime.sendMessage({
-                command: "log",
-                msg: `[BG][nativeVideo] ${msg}`
-            })
-        }
-
+        function logN(msg: any): void { log(msg, "nativeVideo") }
         logN("Started")
-        const a = document.createElement("a")
-        a.href = url
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        logN("Ended")
+        chrome.tabs.create({ url: "https://lcms.skku.edu", active: true }, (tab) => {
+            logN("Tab Opened")
+            const tabId = tab.id
+            chrome.tabs.onUpdated.addListener(function listener(tabIdUpdated, info) {
+                if (tabIdUpdated === tabId && info.status === "complete") {
+                    chrome.tabs.onUpdated.removeListener(listener)
+                    logN("Tab Completed")
+                    chrome.scripting.executeScript({
+                        target: { tabId },
+                        func: (url: string) => {
+                            function logN2(msg: string) {
+                                chrome.runtime.sendMessage({
+                                    command: "log",
+                                    msg: `[BG][nativeVideo] ${msg}`,
+                                    err: false
+                                })
+                            }
+                            logN2("ExecuteScript")
+                            const a = document.createElement("a")
+                            a.href = url
+                            document.body.appendChild(a)
+                            a.click()
+                            logN2("Moved")
+                        },
+                        args: [url]
+                    })
+                }
+            })
+        })
     }
 
     function downloadICampus(
         { url, filename="output.mp4" }: { url: string, filename?: string }
-    ): Promise<boolean> {
-        function logD(msg: any, err: boolean = false): void {
-            chrome.runtime.sendMessage({
-                command: "log",
-                msg: `[BG][downloadICampus] ${msg}`,
-                err: err
-            })
-        }
+    ): void {
+        function logD(msg: any): void { log(msg, "downloadICampus") }
         logD("Started")
-        return fetch(url)
-            .then((response) => {
-                logD("Connected")
-                return response.blob()
+        chrome.tabs.create({ url: "https://lcms.skku.edu", active: false }, (tab) => {
+            logD("Tab Opened")
+            const tabId = tab.id
+            chrome.tabs.onUpdated.addListener(function listener(tabIdUpdated, info) {
+                if (tabIdUpdated === tabId && info.status === "complete") {
+                    chrome.tabs.onUpdated.removeListener(listener)
+                    logD("Tab Completed")
+                    chrome.scripting.executeScript({
+                        target: { tabId },
+                        func: (url: string, filename: string) => {
+                            function logD2(msg: string, err: boolean = false) {
+                                chrome.runtime.sendMessage({
+                                    command: "log",
+                                    msg: `[BG][downloadICampus] ${msg}`,
+                                    err: err
+                                })
+                            }
+                            logD2("ExecuteScript")
+                            return fetch(url)
+                                .then((response) => {
+                                    logD2("Connected")
+                                    return response.blob()
+                                })
+                                .then((blob) => {
+                                    const blobUrl = URL.createObjectURL(blob)
+                                    const a = document.createElement("a")
+                                    a.href = blobUrl
+                                    a.download = filename
+                                    document.body.appendChild(a)
+                                    a.click()
+                                    URL.revokeObjectURL(blobUrl)
+                                    document.body.removeChild(a)
+                                    logD2("Ended")
+                                })
+                                .catch((e) => {
+                                    logD2("Exception")
+                                    logD2(`${e}`, true)
+                                })
+                        },
+                        args: [url, filename]
+                    }).then(() => {
+                        if (tab != undefined && tab.id != undefined) {
+                            chrome.tabs.remove(tab.id)
+                            logD("Tab Closed")
+                        }
+                    })
+                }
             })
-            .then((blob) => {
-                const blobUrl = URL.createObjectURL(blob)
-                const a = document.createElement("a")
-                a.href = blobUrl
-                a.download = filename
-                document.body.appendChild(a)
-                a.click()
-                URL.revokeObjectURL(blobUrl)
-                document.body.removeChild(a)
-                logD("Ended")
-                chrome.runtime.sendMessage({
-                    command: "closeTab",
-                })
-                // 아 근데 blob 안쓰는게 난듯
-                return true
-            })
-            .catch((e) => {
-                logD("Exception")
-                logD(`${e}`, true)
-                return false
-            })
+        })
     }
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+
+    chrome.runtime.onMessage.addListener((message/*, sender, sendResponse*/) => {
         if (message.command === "log") {
             if (message.err) console.error(message.msg)
             else console.log(message.msg)
@@ -69,44 +104,11 @@
             log(`Message Received: ${JSON.stringify(message)}`)
             if (message.command === "downloadICampus") {
                 log("Received", "downloadICampus")
-                chrome.tabs.create({ url: "https://lcms.skku.edu", active: false }, (tab) => {
-                    const tabId = tab.id
-
-                    chrome.tabs.onUpdated.addListener(function listener(tabIdUpdated, info) {
-                        if (tabIdUpdated === tabId && info.status === "complete") {
-                            chrome.tabs.onUpdated.removeListener(listener)
-                            log("openTab", "downloadICampus")
-                            chrome.scripting.executeScript({
-                                target: { tabId },
-                                func: downloadICampus,
-                                args: [{ url: message.url, filename: message.filename }]
-                            })
-                        }
-                    })
-                })
+                downloadICampus({ url: message.url, filename: message.filename })
             }
             else if (message.command === "nativeVideo") {
                 log("Received", "nativeVideo")
-                chrome.tabs.create({ url: "https://lcms.skku.edu", active: true }, (tab) => {
-                    const tabId = tab.id
-
-                    chrome.tabs.onUpdated.addListener(function listener(tabIdUpdated, info) {
-                        if (tabIdUpdated === tabId && info.status === "complete") {
-                            chrome.tabs.onUpdated.removeListener(listener)
-                            log("openTab", "nativeVideo")
-                            chrome.scripting.executeScript({
-                                target: { tabId },
-                                func: nativeVideo,
-                                args: [message.url]
-                            })
-                        }
-                    })
-                })
-            }
-            else if (message.command === "closeTab") {
-                log("closeTab")
-                if (sender.tab != undefined && sender.tab.id != undefined)
-                    chrome.tabs.remove(sender.tab.id)
+                nativeVideo(message.url)
             }
         }
     })
