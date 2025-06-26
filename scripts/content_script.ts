@@ -123,11 +123,11 @@
     fontStyle.textContent = font
     document.head.append(fontStyle)
 
-    function makeButton(button: HTMLButtonElement, text: string): void {
+    function makeButton(button: HTMLButtonElement, text: string, for_menu: boolean = false): void {
         button.textContent = text
         button.style.padding = "10px 16px"
         button.style.fontFamily = "NanumSquareNeo"
-        button.style.fontSize = "16px"
+        button.style.fontSize = "12px"
         button.style.lineHeight = "1"
         button.style.borderColor = "#000000"
         button.style.borderWidth = "1px"
@@ -135,8 +135,11 @@
         button.style.borderRadius = "9999px"
         button.style.backgroundColor = "#0945A0"
         button.style.color = "#ffffff"
-        button.style.opacity = "0.7"
         button.style.cursor = "pointer"
+        if (for_menu) {
+            button.style.fontSize = "16px"
+            button.style.opacity = "0.7"
+        }
     }
 
     if (!document.getElementById("fightICampusDiv")) {
@@ -184,6 +187,20 @@
         })
         inspectPopup.appendChild(inspectClose)
 
+        if (thumbnail) {
+            const inspectImage = document.createElement("img")
+            inspectImage.src = thumbnail
+            inspectImage.style.width = "120px"
+            inspectImage.style.display = "block"
+            inspectImage.style.marginBottom = "12px"
+            inspectImage.style.marginLeft = "auto"
+            inspectImage.style.marginRight = "auto"
+            inspectImage.style.borderColor = "#000000"
+            inspectImage.style.borderWidth = "1px"
+            inspectImage.style.borderStyle = "solid"
+            inspectPopup.appendChild(inspectImage)
+        }
+
         const contentList = [`영상 제목: ${contentTitle}`,
             `담당 교수님: ${userName}`,
             `영상 길이: ${durationStr}`,
@@ -200,19 +217,31 @@
             inspectPopup.appendChild(inspectText)
         }
 
-        if (thumbnail) {
-            const inspectImage = document.createElement("img")
-            inspectImage.src = thumbnail
-            inspectImage.style.width = "140px"
-            inspectImage.style.display = "block"
-            inspectImage.style.marginTop = "8px"
-            inspectImage.style.marginLeft = "auto"
-            inspectImage.style.marginRight = "auto"
-            inspectImage.style.borderColor = "#000000"
-            inspectImage.style.borderWidth = "1px"
-            inspectImage.style.borderStyle = "solid"
-            inspectPopup.appendChild(inspectImage)
-        }
+        const nativeVideoButtonDiv = document.createElement("div")
+        nativeVideoButtonDiv.style.width = "fit-content"
+        nativeVideoButtonDiv.style.display = "flex"
+        nativeVideoButtonDiv.style.alignItems = "center"
+        nativeVideoButtonDiv.style.marginTop = "12px"
+        nativeVideoButtonDiv.style.marginLeft = "auto"
+        nativeVideoButtonDiv.style.gap = "8px"
+        inspectPopup.appendChild(nativeVideoButtonDiv)
+
+        const nativeVideoLocalButton = document.createElement("button")
+        makeButton(nativeVideoLocalButton, "NV", false)
+        nativeVideoLocalButton.addEventListener("click", () => {
+            nativeVideo(movLink)
+        })
+        nativeVideoButtonDiv.appendChild(nativeVideoLocalButton)
+
+        const nativeVideoNTButton = document.createElement("button")
+        makeButton(nativeVideoNTButton, "NVNT", false)
+        nativeVideoNTButton.addEventListener("click", () => {
+            chrome.runtime.sendMessage({
+                command: "nativeVideo",
+                url: movLink
+            })
+        })
+        nativeVideoButtonDiv.appendChild(nativeVideoNTButton)
 
         // DownloadPopup
         let showDownloadPopup = false
@@ -294,6 +323,8 @@
 
         const downloadSpinner = document.createElement("div")
         downloadSpinner.className = "spinner-border"
+        downloadSpinner.style.width = "1.5rem"
+        downloadSpinner.style.height = "1.5rem"
         downloadSpinner.role = "status"
         shadow.appendChild(downloadSpinner)
 
@@ -305,18 +336,7 @@
         downloadPopupMessage.style.color = "#7a0520"
 
         const downloadPopupButton = document.createElement("button")
-        downloadPopupButton.textContent = "다운로드"
-        downloadPopupButton.style.padding = "10px 16px"
-        downloadPopupButton.style.fontFamily = "NanumSquareNeo"
-        downloadPopupButton.style.fontSize = "16px"
-        downloadPopupButton.style.lineHeight = "1"
-        downloadPopupButton.style.borderColor = "#000000"
-        downloadPopupButton.style.borderWidth = "1px"
-        downloadPopupButton.style.borderStyle = "solid"
-        downloadPopupButton.style.borderRadius = "9999px"
-        downloadPopupButton.style.backgroundColor = "#0945A0"
-        downloadPopupButton.style.color = "#ffffff"
-        downloadPopupButton.style.cursor = "pointer"
+        makeButton(downloadPopupButton, "다운로드", false)
         downloadPopupButton.addEventListener("click", () => {
             log(`movLink: ${movLink}`)
             if (showDownloadPopupMessage) downloadPopupButtonDiv.removeChild(downloadPopupMessage)
@@ -355,7 +375,7 @@
 
         let toggle = true
         const toggleButton = document.createElement("button")
-        makeButton(toggleButton, ">")
+        makeButton(toggleButton, ">", true)
         toggleButton.addEventListener("click", () => {
             if (toggle) {
                 if (showInspectPopup) {
@@ -379,7 +399,7 @@
         buttonDiv.appendChild(toggleButton)
 
         const inspectButton = document.createElement("button")
-        makeButton(inspectButton, "분석")
+        makeButton(inspectButton, "분석", true)
         inspectButton.addEventListener("click", () => {
             if (showInspectPopup) div.removeChild(inspectPopup)
             else {
@@ -394,7 +414,7 @@
         buttonDiv.appendChild(inspectButton)
 
         const downloadButton = document.createElement("button")
-        makeButton(downloadButton, "다운로드")
+        makeButton(downloadButton, "다운로드", true)
         downloadButton.addEventListener("click", () => {
             if (showDownloadPopup) div.removeChild(downloadPopup)
             else {
