@@ -5,6 +5,23 @@
         else console.log(msg)
     }
 
+    function nativeVideo(url: string): void {
+        function logN(msg: any): void {
+            chrome.runtime.sendMessage({
+                command: "log",
+                msg: `[BG][nativeVideo] ${msg}`
+            })
+        }
+
+        logN("Started")
+        const a = document.createElement("a")
+        a.href = url
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        logN("Ended")
+    }
+
     function downloadICampus(
         { url, filename="output.mp4" }: { url: string, filename?: string }
     ): Promise<boolean> {
@@ -59,7 +76,6 @@
                         if (tabIdUpdated === tabId && info.status === "complete") {
                             chrome.tabs.onUpdated.removeListener(listener)
                             log("openTab", "downloadICampus")
-
                             chrome.scripting.executeScript({
                                 target: { tabId },
                                 func: downloadICampus,
@@ -69,7 +85,25 @@
                     })
                 })
             }
-            if (message.command === "closeTab") {
+            else if (message.command === "nativeVideo") {
+                log("Received", "nativeVideo")
+                chrome.tabs.create({ url: "https://lcms.skku.edu", active: true }, (tab) => {
+                    const tabId = tab.id
+
+                    chrome.tabs.onUpdated.addListener(function listener(tabIdUpdated, info) {
+                        if (tabIdUpdated === tabId && info.status === "complete") {
+                            chrome.tabs.onUpdated.removeListener(listener)
+                            log("openTab", "nativeVideo")
+                            chrome.scripting.executeScript({
+                                target: { tabId },
+                                func: nativeVideo,
+                                args: [message.url]
+                            })
+                        }
+                    })
+                })
+            }
+            else if (message.command === "closeTab") {
                 log("closeTab")
                 if (sender.tab != undefined && sender.tab.id != undefined)
                     chrome.tabs.remove(sender.tab.id)

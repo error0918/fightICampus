@@ -38,6 +38,10 @@
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
                 const tab = tabs[0]
                 if (tab) inspect(tab)
+                chrome.runtime.sendMessage({
+                    command: "nativeVideo",
+                    url: "https://vod.skku.edu/contents4/skku100001/682d872b629b8/contents/media_files/mobile/ssmovie.mp4",
+                })
             })
         })
 
@@ -46,7 +50,7 @@
             logA({ msg: "Download Button Clicked", sub: true })
             chrome.runtime.sendMessage({
                 command: "downloadICampus",
-                url: "https://vod.skku.edu/contents4/skku100001/660b67074c260/contents/media_files/mobile/ssmovie.mp4",
+                url: "https://vod.skku.edu/contents4/skku100001/682d872b629b8/contents/media_files/mobile/ssmovie.mp4",
                 filename: "output.mp4"
             })
         })

@@ -12,6 +12,17 @@
         })
     }
 
+    function nativeVideo(url: string): void {
+        function logN(msg: any, err: boolean = false): void { log(msg, "downloadICampus", err) }
+        logN("Started")
+        const a = document.createElement("a")
+        a.href = url
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        logN("Ended")
+    }
+
     function downloadICampus(
         { url, filename="output.mp4" }: { url: string, filename?: string }
     ): Promise<boolean> {
@@ -248,6 +259,7 @@
             log(`movLink: ${movLink}`)
             // TODO : 이름 지정, 로딩창
             downloadICampus({ url: movLink, filename: `${contentTitle}.mp4` }).then()
+            nativeVideo(movLink)
         })
         buttonDiv.appendChild(downloadButton)
 
