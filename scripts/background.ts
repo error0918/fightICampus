@@ -96,7 +96,9 @@
     }
 
 
-    chrome.runtime.onMessage.addListener((message/*, sender, sendResponse*/) => {
+    const dataMap:  Record<string, string> = {}
+
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.command === "log") {
             if (message.err) console.error(message.msg)
             else console.log(message.msg)
@@ -109,6 +111,20 @@
             else if (message.command === "nativeVideo") {
                 log("Received", "nativeVideo")
                 nativeVideo(message.url)
+            }
+            else if (message.command === "sendItemViewData") {
+                log("Received", "sendItemViewData")
+                dataMap[message.contentId] = message.title
+            }
+            else if (message.command === "getItemViewData") {
+                log("Received", "getItemViewData")
+                if (message.contentId in dataMap) {
+                    log("Item Exist", "getItemViewData")
+                    sendResponse(dataMap[message.contentId])
+                } else {
+                    log("Item Doesn't Exist", "getItemViewData")
+                    sendResponse(null)
+                }
             }
         }
     })

@@ -20,7 +20,14 @@
     {
       "matches": ["https://lcms.skku.edu/em/*"],
       "all_frames": true,
-      "js": ["scripts/content_script.js"]
+      "match_about_blank": true,
+      "js": ["scripts/script_lcms.js"]
+    },
+    {
+      "matches": ["https://canvas.skku.edu/learningx/lti/lecture_attendance/items/view/*"],
+      "all_frames": true,
+      "match_about_blank": true,
+      "js": ["scripts/script_item_view.js"]
     }
   ],
 

@@ -4,4 +4,5 @@ out
 gen
 /scripts/popup.js
 /scripts/background.js
-/scripts/content_script.js
+/scripts/script_lcms.js
+/scripts/script_item_view.js
