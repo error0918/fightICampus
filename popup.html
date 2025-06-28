@@ -1,74 +1,137 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <title>fightICampus</title>
-    <style>
-        @font-face {
-            font-family: 'NanumSquareNeo';
-            src: url('./fonts/NanumSquareNeoTTF-aLt.woff2') format('woff2');
-            font-weight: 200;
-        }
-        @font-face {
-            font-family: 'NanumSquareNeo';
-            src: url('./fonts/NanumSquareNeoTTF-bRg.woff2') format('woff2');
-            font-weight: 400;
-        }
-        @font-face {
-            font-family: 'NanumSquareNeo';
-            src: url('./fonts/NanumSquareNeoTTF-cBd.woff2') format('woff2');
-            font-weight: 600;
-        }
-        @font-face {
-            font-family: 'NanumSquareNeo';
-            src: url('./fonts/NanumSquareNeoTTF-dEb.woff2') format('woff2');
-            font-weight: 700;
-        }
-        @font-face {
-            font-family: 'NanumSquareNeo';
-            src: url('./fonts/NanumSquareNeoTTF-eHv.woff2') format('woff2');
-            font-weight: 800;
-        }
+    <head>
+        <meta charset="UTF-8">
+        <title>fightICampus</title>
+        <style>
+            @font-face {
+                font-family: 'NanumSquareNeo';
+                src: url('./fonts/NanumSquareNeoTTF-aLt.woff2') format('woff2');
+                font-weight: 200;
+            }
+            @font-face {
+                font-family: 'NanumSquareNeo';
+                src: url('./fonts/NanumSquareNeoTTF-bRg.woff2') format('woff2');
+                font-weight: 400;
+            }
+            @font-face {
+                font-family: 'NanumSquareNeo';
+                src: url('./fonts/NanumSquareNeoTTF-cBd.woff2') format('woff2');
+                font-weight: 600;
+            }
+            @font-face {
+                font-family: 'NanumSquareNeo';
+                src: url('./fonts/NanumSquareNeoTTF-dEb.woff2') format('woff2');
+                font-weight: 700;
+            }
+            @font-face {
+                font-family: 'NanumSquareNeo';
+                src: url('./fonts/NanumSquareNeoTTF-eHv.woff2') format('woff2');
+                font-weight: 800;
+            }
 
-        body {
-            width: 400px;
-            font-family: "NanumSquare Neo", sans-serif;
-        }
+            body {
+                width: 280px;
+                margin: 0;
+                user-select: none;
+                -webkit-user-drag: none;
+                font-family: "NanumSquare Neo", sans-serif;
+            }
 
-        #log {
-            background: #f4f4f4;
-            border: 1px solid #ccc;
-            padding: 10px;
-            height: 250px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            font-family: monospace;
-        }
-        #subLog {
-            background: #f4f4f4;
-            border: 1px solid #ccc;
-            padding: 10px;
-            height: 120px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            font-family: monospace;
-        }
+            .blue-button {
+                padding: 10px 16px;
+                font-size: 12px;
+                line-height: 1;
+                border-color: #000000;
+                border-width: 1px;
+                border-style: solid;
+                border-radius: 9999px;
+                background-color: #0945a0;
+                color: #ffffff;
+                cursor: pointer;
+            }
 
-        .child {
-            display: inline-block;
-        }
-    </style>
-    <script type="module" src="scripts/popup.js"></script>
-</head>
-<body>
-    <h1>fightICampus 테스트</h1>
-    <div>
-    <button id="inspectButton" class="child">분석</button>
-    <button id="downloadButton" class="child">다운로드 시작</button>
-    </div>
-    <h3>📋 로그</h3>
-    <div id="log"></div>
-    <h3>📋 서브 로그</h3>
-    <div id="subLog"></div>
-</body>
+            .setting-box {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .setting-text {
+                font-size: 16px;
+            }
+            .switch-span {
+                display: flex;
+            }
+            .switch-input {
+                display: none;
+            }
+            .switch-label {
+                position: relative;
+                width: 40px;
+                height: 24px;
+                background-color: #888888;
+                border-radius: 12px;
+                cursor: pointer;
+            }
+            .switch-label::before {
+                content: "";
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                width: 20px;
+                height: 20px;
+                background-color: #ffffff;
+                border-radius: 10px;
+            }
+            .switch-input:checked + .switch-label {
+                background-color: #0945A0;
+            }
+            .switch-input:checked + .switch-label::before {
+                transform: translateX(16px);
+            }
+        </style>
+        <script type="module" src="scripts/popup.js"></script>
+    </head>
+    <body>
+        <div style="display: flex; align-items: center; gap: 8px; padding: 4px 8px; background-color: #0945A0;">
+            <img src="images/icon-48.png"  alt="fightICampus Icon" style="width: 48px; height: 48px;"/>
+            <h2 style="color: #ffffff; font-weight: 700;">fightICampus</h2>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 8px;">
+            <p style="font-size: 16px; font-weight: 700;">설정</p>
+            <button id="button-clear" class="blue-button">초기화</button>
+        </div>
+        <hr style="margin: 0 8px"/>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px 12px;">
+            <div class="setting-box">
+                <span class="setting-text">작동</span>
+                <span class="switch-span">
+                    <input id="setting-work" type="checkbox" class="switch-input"/>
+                    <label for="setting-work" class="switch-label"></label>
+                </span>
+            </div>
+            <div class="setting-box under-work">
+                <span class="setting-text">로드시 툴바 펼치기</span>
+                <span class="switch-span">
+                    <input id="setting-open-tool" type="checkbox" class="switch-input"/>
+                    <label for="setting-open-tool" class="switch-label"></label>
+                </span>
+            </div>
+            <div class="setting-box under-work">
+                <span class="setting-text">영상 이름으로 다운로드</span>
+                <span class="switch-span">
+                    <input id="setting-download-content-name" type="checkbox" class="switch-input"/>
+                    <label for="setting-download-content-name" class="switch-label"></label>
+                </span>
+            </div>
+            <div class="setting-box under-work">
+                <span class="setting-text">테스트 모드</span>
+                <span class="switch-span">
+                    <input id="setting-test-mode" type="checkbox" class="switch-input"/>
+                    <label for="setting-test-mode" class="switch-label"></label>
+                </span>
+            </div>
+            <span id="refresh-message-span" style="display: none; font-size: 12px; margin-left: auto; color: #888888;">새로고침시 설정이 적용됩니다</span>
+        </div>
+    </body>
 </html>

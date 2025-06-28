@@ -1,60 +1,81 @@
-(function () {
-    function inspect(tab: chrome.tabs.Tab): boolean {
-        logA({ msg: `[inspect] Started: ${tab.url}` })
+(async function () {
+    // Logic
 
-        if (!tab.url || !tab.id
-            || (!tab.url.startsWith("https://canvas.skku.edu/courses/") && !tab.url.startsWith("http://canvas.skku.edu/courses/"))
-            || (!tab.url.endsWith("/297") && !tab.url.endsWith("/297/"))
-            || !tab.url.includes("/items/")) {
-            logA({msg: "[inspect] Not Expected URL"})
-            return false
+    function log(msg: string, tag: string | null = null, err: boolean = false): void {
+        console.log(tag ? `[PO][${tag}] ${msg}` : `[PO] ${msg}`)
+    }
+
+    function getByMessage(message: any): Promise<any> {
+        return new Promise((resolve) => {
+            chrome.runtime.sendMessage(
+                message,
+                (response) => { resolve(response) }
+            )
+        })
+    }
+
+
+    // Popup
+
+    function appySetting(settingId: string, value: any): void {
+        if (settingId === "setting-work") {
+            if (value) {
+                const settingList = document.getElementsByClassName("setting-box under-work")
+                for (let setting of Array.from(settingList)) {
+                    (setting as HTMLDivElement).style.display = ""
+                }
+            } else {
+                const settingList = document.getElementsByClassName("setting-box under-work")
+                for (let setting of Array.from(settingList)) {
+                    (setting as HTMLDivElement).style.display = "none"
+                }
+            }
         }
-
-        // TODO
-        return true
     }
 
-
-    function logA({ msg, sub = false }: { msg: string, sub?: boolean }): void {
-        const logArea = !sub ?
-            document.getElementById("log") as HTMLDivElement :
-            document.getElementById("subLog") as HTMLDivElement
-        const time = new Date().toLocaleTimeString()
-        const logLine = `[${time}] ${msg}`
-
-        const line = document.createElement("div")
-        line.textContent = logLine
-        logArea.appendChild(line)
-
-        logArea.scrollTop = logArea.scrollHeight
-        console.log(logLine)
-    }
-
-
-    document.addEventListener("DOMContentLoaded", () => {
-        const inspectButton = document.getElementById("inspectButton") as HTMLButtonElement
-        inspectButton.addEventListener("click", () => {
-            logA({ msg: "Inspect Button Clicked", sub: true })
-            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                const tab = tabs[0]
-                if (tab) inspect(tab)
-                chrome.runtime.sendMessage({
-                    command: "nativeVideo",
-                    url: "https://vod.skku.edu/contents4/skku100001/682d872b629b8/contents/media_files/mobile/ssmovie.mp4",
+    const settingList = document.getElementsByClassName("setting-box")
+    for (let setting of Array.from(settingList)) {
+        const settingSwitch: HTMLInputElement | null = setting.querySelector(".switch-input")
+        if (settingSwitch) {
+            const settingId = settingSwitch.id
+            // Load
+            const defaultValue = await getByMessage({
+                command: "getDefaultSetting",
+                settingId: settingId
+            })
+            chrome.storage.sync.get([settingId], (result) => {
+                log(`Setting Loaded: ${settingId}, ${result[settingId]}(l), ${defaultValue}(d)`)
+                if (result[settingId] == undefined) settingSwitch.checked = defaultValue
+                else settingSwitch.checked = result[settingId]
+                appySetting(settingId, settingSwitch.checked)
+            })
+            // Send
+            settingSwitch.addEventListener("change", () => {
+                const sendSetting: Record<string, boolean> = {}
+                sendSetting[settingId] = settingSwitch.checked
+                chrome.storage.sync.set(sendSetting, () => {
+                    log(`Setting Sent: ${settingId}, ${settingSwitch.checked}`)
+                    appySetting(settingId, settingSwitch.checked);
+                    (document.querySelector("#refresh-message-span") as HTMLSpanElement).style.display = ""
                 })
             })
-        })
+        }
+    }
 
-        const downloadButton = document.getElementById("downloadButton") as HTMLButtonElement
-        downloadButton.addEventListener("click", () => {
-            logA({ msg: "Download Button Clicked", sub: true })
-            chrome.runtime.sendMessage({
-                command: "downloadICampus",
-                url: "https://vod.skku.edu/contents4/skku100001/682d872b629b8/contents/media_files/mobile/ssmovie.mp4",
-                filename: "output.mp4"
-            })
-        })
+    // 초기화
+    document.querySelector("button#button-clear")?.addEventListener("click", async () => {
+        chrome.storage.sync.clear()
+        const settingList = document.getElementsByClassName("setting-box")
+        for (let setting of Array.from(settingList)) {
+            const settingSwitch: HTMLInputElement | null = setting.querySelector(".switch-input")
+            if (settingSwitch) {
+                const settingId = settingSwitch.id
+                settingSwitch.checked = await getByMessage({
+                    command: "getDefaultSetting",
+                    settingId: settingId
+                })
+                appySetting(settingId, settingSwitch.checked)
+            }
+        }
     })
-
-    logA({ msg: "TS Loaded", sub: true })
 })() // IIFE

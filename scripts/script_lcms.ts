@@ -1,7 +1,7 @@
-(function (){
+(async function (){
     // Logic
 
-    let test = true
+    let test = false
 
     function log(msg: string, tag: string | null = null, err: boolean = false): void {
         if (test) console.log(tag ? `[fightICampus][S/L][${tag}] ${msg}` : `[fightICampus][S/L] ${msg}`)
@@ -11,6 +11,31 @@
             err: err
         })
     }
+
+    function getByMessage(message: any): Promise<any> {
+        return new Promise((resolve) => {
+            chrome.runtime.sendMessage(
+                message,
+                (response) => { resolve(response) }
+            )
+        })
+    }
+
+    async function getSetting<T>(settingId: string): Promise<T> {
+        const defaultValue = await getByMessage({
+            command: "getDefaultSetting",
+            settingId: settingId
+        })
+        return new Promise((resolve) => {
+            chrome.storage.sync.get([settingId], (result) => {
+                log(`Setting Loaded: ${settingId}, ${result[settingId]}(l), ${defaultValue}(d)`)
+                if (result[settingId] == undefined) resolve(defaultValue)
+                else resolve(result[settingId])
+            })
+        })
+    }
+    if (!await getSetting("setting-work")) return
+    test = await getSetting("setting-test-mode")
 
     function nativeVideo(url: string): void {
         function logN(msg: any, err: boolean = false): void { log(msg, "downloadICampus", err) }
@@ -66,35 +91,15 @@
     if (variableList && variableList.length > 0) {
         [contentId, contentName,, contentType] = variableList
         log(`contentId: ${contentId}`)
-        log(`contentTitle: ${contentName}`)
+        log(`contentName: ${contentName}`)
         log(`contentType: ${contentType}`)
     }
 
-    let contentTitle: string | null = null
-    chrome.runtime.sendMessage(
-        {
-            command: "getItemViewData",
-            contentId: contentId
-        },
-        (response: string | null) => {
-            if (response) {
-                contentTitle = response
-                log(`contentTitle: ${contentTitle}`)
-
-                // UI
-                downloadInput.value = contentTitle
-                const inspectText = document.createElement("p")
-                inspectText.textContent = `영상 제목: ${contentTitle}`
-                inspectText.style.fontFamily = "NanumSquareNeo"
-                inspectText.style.fontSize = "12px"
-                inspectText.style.marginTop = "0px"
-                inspectText.style.marginBottom = "4px"
-                inspectContentDiv.appendChild(inspectText)
-            } else {
-                log(`Fail to Load contentTitle`)
-            }
-        }
-    )
+    let contentTitle: string | null = await getByMessage({
+        command: "getItemViewData",
+        contentId: contentId
+    })
+    log(`contentTitle: ${contentTitle}`)
 
     let userName = document.querySelector("meta[name=\"user_name\"]")?.getAttribute("content")
     let thumbnail = document.querySelector("meta[property=\"og:image\"]")?.getAttribute("content")
@@ -228,14 +233,15 @@
     }
 
     const inspectContentDiv = document.createElement("div")
-    inspectContentDiv.style.display = "flex"
-    inspectContentDiv.style.flexDirection = "column-reverse"
-    const contentList = [`영상 이름: ${contentName}`,
+    const contentList = [
+        `영상 제목: ${contentTitle}`,
+        `영상 이름: ${contentName}`,
         `담당 교수님: ${userName}`,
         `영상 길이: ${durationStr}`,
         `영상 등록: ${registrationDateStr}`,
         `영상 ID: ${contentId}`,
-        `영상 Type: ${contentTypeStr}`].reverse()
+        `영상 Type: ${contentTypeStr}`
+    ]
     for (let content of contentList) {
         const inspectText = document.createElement("p")
         inspectText.textContent = content
@@ -317,7 +323,7 @@
     downloadPopup.appendChild(downloadInputTitle)
 
     const downloadInput = document.createElement("input")
-    downloadInput.value = contentName
+    downloadInput.value = await getSetting("setting-download-content-name") ? contentName : (contentTitle ? contentTitle : contentName)
     downloadInput.type = "text"
     downloadInput.placeholder = "/\\:*?\"<> 금지"
     downloadInput.style.padding = "8px 12px"
@@ -403,9 +409,9 @@
     buttonDiv.style.gap = "10px"
     div.appendChild(buttonDiv)
 
-    let toggle = true
+    let toggle = await getSetting("setting-open-tool")
     const toggleButton = document.createElement("button")
-    makeButton(toggleButton, ">", true)
+    makeButton(toggleButton, toggle ? ">" : "<", true)
     toggleButton.addEventListener("click", () => {
         if (toggle) {
             if (showInspectPopup) {
@@ -441,7 +447,7 @@
         }
         showInspectPopup = !showInspectPopup
     })
-    buttonDiv.appendChild(inspectButton)
+    if (toggle) buttonDiv.appendChild(inspectButton)
 
     const downloadButton = document.createElement("button")
     makeButton(downloadButton, "다운로드", true)
@@ -456,7 +462,7 @@
         }
         showDownloadPopup = !showDownloadPopup
     })
-    buttonDiv.appendChild(downloadButton)
+    if (toggle) buttonDiv.appendChild(downloadButton)
 
     document.body.appendChild(div)
 

@@ -96,9 +96,16 @@
     }
 
 
+    const defaultSetting: Record<string, boolean> = {
+        "setting-work": true,
+        "setting-open-tool": true,
+        "setting-download-content-name": false,
+        "setting-test-mode": false
+    }
     const dataMap:  Record<string, string> = {}
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+
+    chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         if (message.command === "log") {
             if (message.err) console.error(message.msg)
             else console.log(message.msg)
@@ -125,6 +132,9 @@
                     log("Item Doesn't Exist", "getItemViewData")
                     sendResponse(null)
                 }
+            }
+            else if (message.command == "getDefaultSetting") {
+                sendResponse(defaultSetting[message.settingId])
             }
         }
     })
